@@ -26,7 +26,10 @@ def var_calculation(returns, confidence_level, method, portfolio_value):
     if method == "Historical":
         var = np.percentile(returns, 100 - confidence_level)
     elif method == "Parametric":
-        var = ""
+        mean = np.mean(returns)
+        sigma = np.std(returns)
+        z_score = -(stats.norm.ppf(1 - confidence_level / 100))
+        var = -(mean + z_score * sigma)
     elif method == "Monte Carlo":
         var = ""
     return var*portfolio_value
