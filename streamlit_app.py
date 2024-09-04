@@ -4,6 +4,8 @@ import plotly.graph_objs as go
 import matplotlib.pyplot as plt
 import math
 import pandas as pd
+import yfinance as yf
+from scipy.stats import norm
 
 st.set_page_config(layout="wide")
 st.title("Value at Risk (VaR) Calculator")
@@ -16,5 +18,15 @@ with st.sidebar:
     st.sidebar.write("--------------------------")
     portfolio_value = st.number_input('Portfolio Value (USD)', value=100000)
     confidence_level = st.slider('Confidence level', min_value=0.90, max_value=0.99, value=0.95, step=0.01)
+    calculate_btn = st.button('Calculate VaR')
 
 selected_variable = st.selectbox("Select VaR Method", ["Historical", "Parametric", "Monte Carlo Simulations"])
+
+def var_calculation(returns, confidence_level, method, portfolio_value):
+    if method == "Historical":
+        var = np.percentile(returns, 100 - confidence_level)
+    elif method == "Parametric":
+        var = ""
+    elif method == "Monte Carlo":
+        var = ""
+    return var*portfolio_value
