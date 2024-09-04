@@ -16,11 +16,11 @@ with st.sidebar:
     github_url ="https://github.com/ArthurVillela1"
     st.markdown(f'<a href="{linkedin_url}" target="_blank" style="text-decoration: none; color: inherit;"><img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" width="25" height="25" style="vertical-align: middle; margin-right: 10px;"><a href="{github_url}" target="_blank" style="text-decoration: none; color: inherit;"><img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" width="25" height="25" style="vertical-align: middle; margin-right: 10px;"></a>', unsafe_allow_html=True)
     st.sidebar.write("--------------------------")
-    portfolio_value = st.number_input('Portfolio Value (USD)', value=100000)
-    confidence_level = st.slider('Confidence level', min_value=0.90, max_value=0.99, value=0.95, step=0.01)
+    portfolio_val = st.number_input('Portfolio Value (USD)', value=100000)
+    confidence_lv = st.slider('Confidence level', min_value=0.90, max_value=0.99, value=0.95, step=0.01)
     calculate_btn = st.button('Calculate VaR')
 
-selected_variable = st.selectbox("Select VaR Method", ["Historical", "Parametric", "Monte Carlo Simulations"])
+var_method = st.selectbox("Select VaR Method", ["Historical", "Parametric", "Monte Carlo Simulations"])
 
 def var_calculation(returns, confidence_level, method, portfolio_value):
     if method == "Historical":
@@ -33,3 +33,7 @@ def var_calculation(returns, confidence_level, method, portfolio_value):
     elif method == "Monte Carlo":
         var = ""
     return var
+
+
+st.subheader(f"Value at Risk for your portfolio at {int(confidence_lv*100)}% confidence level:")
+#st.title(f":blue-background[{var_calculation(stock_returns, confidence_lv, var_method, portfolio_val)}]")
