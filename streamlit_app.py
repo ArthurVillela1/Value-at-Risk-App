@@ -4,3 +4,17 @@ import plotly.graph_objs as go
 import matplotlib.pyplot as plt
 import math
 import pandas as pd
+
+st.set_page_config(layout="wide")
+st.title("Value at Risk (VaR) Calculator")
+
+with st.sidebar:
+    st.write("`Created by: Arthur Villela`")
+    linkedin_url = "https://www.linkedin.com/in/arthur-villela"
+    github_url ="https://github.com/ArthurVillela1"
+    st.markdown(f'<a href="{linkedin_url}" target="_blank" style="text-decoration: none; color: inherit;"><img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" width="25" height="25" style="vertical-align: middle; margin-right: 10px;"><a href="{github_url}" target="_blank" style="text-decoration: none; color: inherit;"><img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" width="25" height="25" style="vertical-align: middle; margin-right: 10px;"></a>', unsafe_allow_html=True)
+    st.sidebar.write("--------------------------")
+    portfolio_value = st.number_input('Portfolio Value (USD)', value=100000)
+    confidence_level = st.slider('Confidence level', min_value=0.90, max_value=0.99, value=0.95, step=0.01)
+
+selected_variable = st.selectbox("Select VaR Method", ["Historical", "Parametric", "Monte Carlo Simulations"])
