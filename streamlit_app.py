@@ -18,7 +18,7 @@ with st.sidebar:
     st.sidebar.write("--------------------------")
     portfolio_val = st.number_input('Portfolio Value (USD)', value=100000)
     tickers = st.text_input('Stock Tickers', 'META NVDA')
-    weights = st.text_input('Stock Weights (%):')
+    weights = st.text_input('Stock Weights (%):', '20 80')
     start_date = st.date_input('Start Date', value=pd.to_datetime('2022-01-01'))
     end_date = st.date_input('End Date', value=pd.to_datetime('today'))
     confidence_lv = st.slider('Confidence Level', min_value=0.90, max_value=0.99, value=0.95, step=0.01)
