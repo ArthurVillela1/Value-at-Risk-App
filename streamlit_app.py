@@ -51,12 +51,9 @@ range_returns = historical_returns.rolling(window = rolling_window).sum()
 range_returns = range_returns.dropna()
 print(range_returns)
 
-st.subheader(f"{var_method} Value at Risk for your portfolio at {int(confidence_lv*100)}% confidence level:")
-#st.title(f":blue-background[{var_calculation(stock_returns, confidence_lv, var_method, portfolio_val)}]")
-
 def var_calculation(returns, confidence_level, method, portfolio_value):
     if method == "Historical":
-        var = np.percentile(range_returns, 100 - confidence_level)*portfolio_value
+        var = -np.percentile(returns, 100 - confidence_level)*portfolio_value
     elif method == "Parametric":
         mean = np.mean(returns)
         sigma = np.std(returns)
@@ -65,3 +62,6 @@ def var_calculation(returns, confidence_level, method, portfolio_value):
     elif method == "Monte Carlo":
         var = ""
     return var
+
+st.subheader(f"{var_method} Value at Risk for your portfolio at {int(confidence_lv*100)}% confidence level:")
+st.title(f":red-background[{round(var_calculation(range_returns, confidence_lv, var_method, portfolio_val),2)}]")
