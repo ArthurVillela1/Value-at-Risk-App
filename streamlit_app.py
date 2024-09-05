@@ -53,7 +53,7 @@ print(range_returns)
 
 def var_calculation(returns, confidence_level, method, portfolio_value):
     if method == "Historical":
-        var = -np.percentile(returns, 100 - confidence_level)*portfolio_value
+        var = np.percentile(returns, 100 - confidence_level)*portfolio_value
     elif method == "Parametric":
         mean = np.mean(returns)
         sigma = np.std(returns)
@@ -64,4 +64,4 @@ def var_calculation(returns, confidence_level, method, portfolio_value):
     return var
 
 st.subheader(f"{var_method} Value at Risk for your portfolio at {int(confidence_lv*100)}% confidence level:")
-st.title(f":red-background[{round(var_calculation(range_returns, confidence_lv, var_method, portfolio_val),2)}]")
+st.title(f":red-background[${round(var_calculation(range_returns, confidence_lv, var_method, portfolio_val),2)}]")
