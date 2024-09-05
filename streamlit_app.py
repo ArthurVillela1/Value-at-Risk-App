@@ -24,8 +24,12 @@ with st.sidebar:
     confidence_lv = st.slider('Confidence Level', min_value=0.90, max_value=0.99, value=0.95, step=0.01)
     calculate_btn = st.button('Calculate VaR')
 
+# Split tickers and weights
 tickers_list = tickers.split(" ")
-weights_list = tickers.split(" ")
+weights_list = list(map(float, weights.split(" ")))
+
+# Normalize weights to sum to 1
+weights_list = [w / 100 for w in weights_list]
 
 var_method = st.selectbox("Select VaR Method", ["Historical", "Parametric", "Monte Carlo Simulations"])
 
@@ -35,11 +39,27 @@ def var_calculation(returns, confidence_level, method, portfolio_value):
     elif method == "Parametric":
         mean = np.mean(returns)
         sigma = np.std(returns)
-        z_score = -(stats.norm.ppf(1 - confidence_level / 100))
+        z_score = -(norm.ppf(1 - confidence_level))
         var = -(mean + z_score * sigma)*portfolio_value
     elif method == "Monte Carlo":
         var = ""
     return var
+
+# Fetch adjusted close data
+adj_close_df = pd.DataFrame()
+for ticker in tickers_list:
+    data = yf.download(ticker, start=start_date, end=end_date)
+    adj_close_df[ticker] = data['Adj Close']
+
+# Calculate log returns
+log_returns = np.log(adj_close_df / adj_close_df.shift(1))
+log_returns = log_returns.dropna()
+
+# Calculate portfolio returns based on weights
+historical_returns = (log_returns * weights_list).sum(axis=1)
+
+# Output historical returns to verify
+print(historical_returns)
 
 st.subheader(f"{var_method} Value at Risk for your portfolio at {int(confidence_lv*100)}% confidence level:")
 #st.title(f":blue-background[{var_calculation(stock_returns, confidence_lv, var_method, portfolio_val)}]")
