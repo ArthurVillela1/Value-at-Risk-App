@@ -41,5 +41,5 @@ def var_calculation(returns, confidence_level, method, portfolio_value):
         var = ""
     return var
 
-st.subheader(f"Value at Risk for your portfolio at {int(confidence_lv*100)}% confidence level:")
+st.subheader(f"{var_method} Value at Risk for your portfolio at {int(confidence_lv*100)}% confidence level:")
 #st.title(f":blue-background[{var_calculation(stock_returns, confidence_lv, var_method, portfolio_val)}]")
