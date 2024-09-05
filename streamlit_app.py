@@ -22,6 +22,7 @@ with st.sidebar:
     start_date = st.date_input('Start Date', value=pd.to_datetime('2022-01-01'))
     end_date = st.date_input('End Date', value=pd.to_datetime('today'))
     confidence_lv = st.slider('Confidence Level', min_value=0.90, max_value=0.99, value=0.95, step=0.01)
+    rolling_window = st.slider('Rolling window', min_value=1, max_value=252, value=20)
     calculate_btn = st.button('Calculate VaR')
 
 # Split tickers and weights
@@ -58,8 +59,9 @@ log_returns = log_returns.dropna()
 # Calculate portfolio returns based on weights
 historical_returns = (log_returns * weights_list).sum(axis=1)
 
-# Output historical returns to verify
-print(historical_returns)
+range_returns = historical_returns.rolling(window = rolling_window).sum()
+range_returns = range_returns.dropna()
+print(range_returns)
 
 st.subheader(f"{var_method} Value at Risk for your portfolio at {int(confidence_lv*100)}% confidence level:")
 #st.title(f":blue-background[{var_calculation(stock_returns, confidence_lv, var_method, portfolio_val)}]")
