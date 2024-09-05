@@ -16,10 +16,10 @@ with st.sidebar:
     github_url ="https://github.com/ArthurVillela1"
     st.markdown(f'<a href="{linkedin_url}" target="_blank" style="text-decoration: none; color: inherit;"><img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" width="25" height="25" style="vertical-align: middle; margin-right: 10px;"><a href="{github_url}" target="_blank" style="text-decoration: none; color: inherit;"><img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" width="25" height="25" style="vertical-align: middle; margin-right: 10px;"></a>', unsafe_allow_html=True)
     st.sidebar.write("--------------------------")
-    tickers = st.text_input('Stock Tickers', 'META GOOGL')
+    portfolio_val = st.number_input('Portfolio Value (USD)', value=100000)
+    tickers = st.text_input('Stock Tickers', 'META NVDA')
     start_date = st.date_input('Start Date', value=pd.to_datetime('2022-01-01'))
     end_date = st.date_input('End Date', value=pd.to_datetime('today'))
-    portfolio_val = st.number_input('Portfolio Value (USD)', value=100000)
     confidence_lv = st.slider('Confidence level', min_value=0.90, max_value=0.99, value=0.95, step=0.01)
     calculate_btn = st.button('Calculate VaR')
 
