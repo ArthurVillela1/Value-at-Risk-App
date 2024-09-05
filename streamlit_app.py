@@ -34,18 +34,6 @@ weights_list = [w / 100 for w in weights_list]
 
 var_method = st.selectbox("Select VaR Method", ["Historical", "Parametric", "Monte Carlo Simulations"])
 
-def var_calculation(returns, confidence_level, method, portfolio_value):
-    if method == "Historical":
-        var = np.percentile(returns, 100 - confidence_level)*portfolio_value
-    elif method == "Parametric":
-        mean = np.mean(returns)
-        sigma = np.std(returns)
-        z_score = -(norm.ppf(1 - confidence_level))
-        var = -(mean + z_score * sigma)*portfolio_value
-    elif method == "Monte Carlo":
-        var = ""
-    return var
-
 # Fetch adjusted close data
 adj_close_df = pd.DataFrame()
 for ticker in tickers_list:
@@ -65,3 +53,15 @@ print(range_returns)
 
 st.subheader(f"{var_method} Value at Risk for your portfolio at {int(confidence_lv*100)}% confidence level:")
 #st.title(f":blue-background[{var_calculation(stock_returns, confidence_lv, var_method, portfolio_val)}]")
+
+def var_calculation(returns, confidence_level, method, portfolio_value):
+    if method == "Historical":
+        var = np.percentile(range_returns, 100 - confidence_level)*portfolio_value
+    elif method == "Parametric":
+        mean = np.mean(returns)
+        sigma = np.std(returns)
+        z_score = -(norm.ppf(1 - confidence_level))
+        var = -(mean + z_score * sigma)*portfolio_value
+    elif method == "Monte Carlo":
+        var = ""
+    return var
