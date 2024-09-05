@@ -1,8 +1,6 @@
 import streamlit as st
 import numpy as np
-import plotly.graph_objs as go
 import matplotlib.pyplot as plt
-import math
 import pandas as pd
 import yfinance as yf
 from scipy.stats import norm
@@ -34,10 +32,34 @@ weights_list = [w / 100 for w in weights_list]
 
 var_method = st.selectbox("Select VaR Method", ["Historical", "Parametric", "Monte Carlo Simulations"])
 
-if var_method=="Parametric":
-    st.write(f":blue-background[VaR = −(Mean Return+Z-Score×Standard Deviation)×Portfolio Value]")
-elif var_method=="Historical":
-    st.write(f":blue-background[VaR = −Nth percentile of the sorted historical returns×Portfolio Value]")
+st.markdown(
+    """
+    <style>
+    .left-align {text-align: left;}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Parametric VaR formula
+if var_method == "Parametric":
+    st.markdown('<div class="left-align">', unsafe_allow_html=True)
+    st.latex(r"VaR = -( \text{Mean Return} + Z \cdot \text{Std Dev}) \times \text{Portfolio Value}")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# Historical VaR formula
+elif var_method == "Historical":
+    st.markdown('<div class="left-align">', unsafe_allow_html=True)
+    st.latex(r"VaR = - \text{Nth percentile of the sorted historical returns} \times \text{Portfolio Value}")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# Monte Carlo Simulations VaR formula
+elif var_method == "Monte Carlo Simulations":
+    num_simulations = st.number_input('Number of simulations', value=100000)
+    st.markdown('<div class="left-align">', unsafe_allow_html=True)
+    st.latex(r"\text{VaR}_{\alpha} = P_0 - \text{Percentile}_{\alpha} \left( P_0 \cdot (1 + r_i) \right)")
+    st.markdown('</div>', unsafe_allow_html=True)
+
 
 # Fetch adjusted close data
 adj_close_df = pd.DataFrame()
@@ -52,21 +74,31 @@ log_returns = log_returns.dropna()
 # Calculate portfolio returns based on weights
 historical_returns = (log_returns * weights_list).sum(axis=1)
 
-range_returns = historical_returns.rolling(window = rolling_window).sum()
+range_returns = historical_returns.rolling(window=rolling_window).sum()
 range_returns = range_returns.dropna()
-print(range_returns)
 
-def var_calculation(returns, confidence_level, method, portfolio_value):
+def var_calculation(returns, confidence_level, method, portfolio_value, simulations=None):
     if method == "Historical":
-        var = np.percentile(returns, 100 - confidence_level)*portfolio_value
+        var = np.percentile(returns, 100 * (1 - confidence_level)) * portfolio_value
     elif method == "Parametric":
         mean = np.mean(returns)
         sigma = np.std(returns)
         z_score = -(norm.ppf(1 - confidence_level))
-        var = (mean + z_score * sigma)*portfolio_value
-    elif method == "Monte Carlo":
-        var = ""
+        var = (mean + z_score * sigma) * portfolio_value
+    elif method == "Monte Carlo Simulations" and simulations is not None:
+        # Monte Carlo simulation
+        mean = np.mean(returns)
+        sigma = np.std(returns)
+        simulated_returns = np.random.normal(mean, sigma, simulations)
+        simulated_portfolio_values = portfolio_value * (1 + simulated_returns)
+        # Calculate VaR as the percentile of worst losses
+        var = np.percentile(simulated_portfolio_values - portfolio_value, 100 * (1 - confidence_level))
     return -var
 
-st.subheader(f"{var_method} Value at Risk for your portfolio at {int(confidence_lv*100)}% confidence level:")
-st.title(f":red-background[${round(var_calculation(range_returns, confidence_lv, var_method, portfolio_val),2)}]")
+# Display the VaR result for the selected method
+if var_method == "Monte Carlo Simulations":
+    st.subheader(f"{var_method} Value at Risk for your portfolio at {int(confidence_lv * 100)}% confidence level:")
+    st.title(f":red-background[${round(var_calculation(range_returns, confidence_lv, var_method, portfolio_val, num_simulations), 2)}]")
+else:
+    st.subheader(f"{var_method} Value at Risk for your portfolio at {int(confidence_lv * 100)}% confidence level:")
+    st.title(f":red-background[${round(var_calculation(range_returns, confidence_lv, var_method, portfolio_val), 2)}]")
