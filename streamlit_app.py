@@ -52,8 +52,8 @@ cov_matrix = log_returns.cov().values
 def monte_carlo_var_cov(simulations, mean_returns, cov_matrix, weights, portfolio_value, confidence_level):
     simulated_returns = np.random.multivariate_normal(mean_returns, cov_matrix, simulations)
     portfolio_simulated_returns = np.dot(simulated_returns, weights)
-    losses = portfolio_value * portfolio_simulated_returns  # This is the variation (losses or gains)
-    var = np.percentile(losses, 100 * (1 - confidence_level))  # VaR is the max negative variation
+    losses = portfolio_value * portfolio_simulated_returns 
+    var = np.percentile(losses, 100 * (1 - confidence_level)) 
     return var, losses
 
 # Function to calculate Parametric VaR
@@ -67,8 +67,8 @@ def parametric_var(portfolio_returns, confidence_level, portfolio_value):
 
 # Function to calculate Historical VaR
 def historical_var(portfolio_returns, confidence_level, portfolio_value):
-    losses = portfolio_returns * portfolio_value  # Losses based on historical returns
-    var = np.percentile(losses, 100 * (1 - confidence_level))  # VaR is max negative variation
+    losses = portfolio_returns * portfolio_value 
+    var = np.percentile(losses, 100 * (1 - confidence_level)) 
     return var, losses
 
 # General VaR calculation function
