@@ -84,7 +84,7 @@ def var_calculation(confidence_level, method, portfolio_value, simulations=None,
 
 # Plot histogram function (for portfolio variation)
 def plot_histogram(losses, var_value):
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(8, 4))
     plt.hist(losses, bins=50, alpha=0.7, color='blue')
     plt.axvline(x=var_value, color='r', linestyle='--', label=f'VaR: {round(var_value, 2)}')
     plt.xlabel('Portfolio Variation (USD)')
