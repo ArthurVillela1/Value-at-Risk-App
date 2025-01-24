@@ -39,7 +39,7 @@ adj_close_df = pd.DataFrame()
 valid_tickers = []
 for ticker in tickers_list:
     try:
-        data = yf.download(ticker, start=start_date, end=end_date)
+        data = yf.download(ticker, start=start_date, end=end_date, progress=False, threads=False)
         if not data.empty and 'Adj Close' in data.columns:
             adj_close_df[ticker] = data['Adj Close']
             valid_tickers.append(ticker)
