@@ -34,9 +34,26 @@ var_method = st.selectbox("Select VaR Method", ["Historical", "Parametric", "Mon
 
 # Fetch adjusted close data
 adj_close_df = pd.DataFrame()
+
+# Validate tickers and handle missing data
+valid_tickers = []
 for ticker in tickers_list:
-    data = yf.download(ticker, start=start_date, end=end_date)
-    adj_close_df[ticker] = data['Adj Close']
+    try:
+        data = yf.download(ticker, start=start_date, end=end_date)
+        if not data.empty and 'Adj Close' in data.columns:
+            adj_close_df[ticker] = data['Adj Close']
+            valid_tickers.append(ticker)
+        else:
+            st.warning(f"No data or 'Adj Close' column found for {ticker}. Skipping.")
+    except Exception as e:
+        st.warning(f"Error retrieving data for {ticker}: {e}")
+
+# Update tickers list to only include valid tickers
+tickers_list = valid_tickers
+
+if adj_close_df.empty:
+    st.error("No valid data found for the provided tickers. Please check your inputs.")
+    st.stop()
 
 # Calculate log returns
 log_returns = np.log(adj_close_df / adj_close_df.shift(1)).dropna()
