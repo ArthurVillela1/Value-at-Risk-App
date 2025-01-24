@@ -12,44 +12,46 @@ with st.sidebar:
     st.write("`Created by: Arthur Villela`")
     linkedin_url = "https://www.linkedin.com/in/arthur-villela"
     github_url = "https://github.com/ArthurVillela1"
-    st.markdown(f'<a href="{linkedin_url}" target="_blank" style="text-decoration: none; color: inherit;"><img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" width="25" height="25" style="vertical-align: middle; margin-right: 10px;"><a href="{github_url}" target="_blank" style="text-decoration: none; color: inherit;"><img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" width="25" height="25" style="vertical-align: middle; margin-right: 10px;"></a>', unsafe_allow_html=True)
+    st.markdown(
+        f'<a href="{linkedin_url}" target="_blank" style="text-decoration: none; color: inherit;">'
+        f'<img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" width="25" height="25" style="vertical-align: middle; margin-right: 10px;">'
+        f'</a><a href="{github_url}" target="_blank" style="text-decoration: none; color: inherit;">'
+        f'<img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" width="25" height="25" style="vertical-align: middle; margin-right: 10px;"></a>',
+        unsafe_allow_html=True
+    )
     st.sidebar.write("--------------------------")
     portfolio_val = st.number_input('Portfolio Value (USD)', value=100000)
-    tickers = st.text_input('Stock Tickers', 'META NVDA')
-    weights = st.text_input('Stock Weights (%):', '20 80')
+    tickers = st.text_input('Stock Tickers (e.g., META NVDA)', 'META NVDA')
+    weights = st.text_input('Stock Weights (%):', '50 50')
     start_date = st.date_input('Start Date', value=pd.to_datetime('2022-01-01'))
     end_date = st.date_input('End Date', value=pd.to_datetime('today'))
     confidence_lv = st.slider('Confidence Level', min_value=0.90, max_value=0.99, value=0.95, step=0.01)
     rolling_window = st.slider('Rolling window', min_value=1, max_value=252, value=20)
 
-# Split tickers and weights
-tickers_list = tickers.split(" ")
-weights_list = list(map(float, weights.split(" ")))
-
-# Normalize weights to sum to 1
+# Normalize and prepare input data
+tickers_list = [ticker.upper() for ticker in tickers.split()]
+weights_list = list(map(float, weights.split()))
 weights_list = [w / 100 for w in weights_list]
 weights_array = np.array(weights_list)
+
+# Error handling for mismatched weights and tickers
+if len(weights_list) != len(tickers_list):
+    st.error("The number of weights must match the number of tickers. Please adjust your inputs.")
+    st.stop()
 
 var_method = st.selectbox("Select VaR Method", ["Historical", "Parametric", "Monte Carlo Simulations"])
 
 # Fetch adjusted close data
 adj_close_df = pd.DataFrame()
-
-# Validate tickers and handle missing data
-valid_tickers = []
 for ticker in tickers_list:
     try:
         data = yf.download(ticker, start=start_date, end=end_date, progress=False, threads=False)
-        if not data.empty and 'Adj Close' in data.columns:
+        if 'Adj Close' in data.columns and not data['Adj Close'].empty:
             adj_close_df[ticker] = data['Adj Close']
-            valid_tickers.append(ticker)
         else:
             st.warning(f"No data or 'Adj Close' column found for {ticker}. Skipping.")
     except Exception as e:
-        st.warning(f"Error retrieving data for {ticker}: {e}")
-
-# Update tickers list to only include valid tickers
-tickers_list = valid_tickers
+        st.warning(f"Error fetching data for {ticker}: {e}")
 
 if adj_close_df.empty:
     st.error("No valid data found for the provided tickers. Please check your inputs.")
@@ -61,11 +63,11 @@ log_returns = np.log(adj_close_df / adj_close_df.shift(1)).dropna()
 # Calculate portfolio returns based on weights
 portfolio_returns = (log_returns * weights_list).sum(axis=1)
 
-# Calculate mean returns and covariance matrix for assets (used in Monte Carlo)
+# Calculate mean returns and covariance matrix for assets
 mean_returns = log_returns.mean().values
 cov_matrix = log_returns.cov().values
 
-# Function to calculate VaR with Monte Carlo Simulations (Covariance included)
+# Function to calculate VaR with Monte Carlo Simulations
 def monte_carlo_var_cov(simulations, mean_returns, cov_matrix, weights, portfolio_value, confidence_level):
     simulated_returns = np.random.multivariate_normal(mean_returns, cov_matrix, simulations)
     portfolio_simulated_returns = np.dot(simulated_returns, weights)
@@ -99,27 +101,26 @@ def var_calculation(confidence_level, method, portfolio_value, simulations=None,
             return monte_carlo_var_cov(simulations, mean_returns, cov_matrix, weights, portfolio_value, confidence_level)
     return None, None
 
-# Plot histogram function (for portfolio variation)
+# Plot histogram function
 def plot_histogram(losses, var_value):
     plt.figure(figsize=(8, 4))
     plt.hist(losses, bins=50, alpha=0.7, color='blue')
-    plt.axvline(x=var_value, color='r', linestyle='--', label=f'VaR: {round(var_value, 2)}')
+    plt.axvline(x=var_value, color='r', linestyle='--', label=f'VaR: ${round(var_value, 2)}')
     plt.xlabel('Portfolio Variation (USD)')
     plt.ylabel('Frequency')
     plt.title('Portfolio Variation Distribution with VaR')
     plt.legend()
     st.pyplot(plt)
 
-# Display VaR result and plot histogram based on selected method
+# Display VaR result and plot histogram
 if var_method == "Monte Carlo Simulations":
     st.subheader(f"{var_method} Value at Risk for your portfolio at {int(confidence_lv * 100)}% confidence level:")
     var, losses = var_calculation(confidence_lv, var_method, portfolio_val, simulations=100000, 
                                   mean_returns=mean_returns, cov_matrix=cov_matrix, weights=weights_array)
-    st.title(f":red-background[${round(var, 2)}]")
+    st.title(f"${round(var, 2)}")
     plot_histogram(losses, var)
-
 else:
     st.subheader(f"{var_method} Value at Risk for your portfolio at {int(confidence_lv * 100)}% confidence level:")
     var, losses = var_calculation(confidence_lv, var_method, portfolio_val, portfolio_returns=portfolio_returns)
-    st.title(f":red-background[${round(var, 2)}]")
+    st.title(f"${round(var, 2)}")
     plot_histogram(losses, var)
