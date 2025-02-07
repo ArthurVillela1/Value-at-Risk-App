@@ -60,13 +60,28 @@ st.write(f"streamlit version: {st.__version__}")
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
+# Normalize and prepare input data
+tickers_list = [ticker.upper() for ticker in tickers.split()]
+weights_list = list(map(float, weights.split()))
+weights_list = [w / 100 for w in weights_list]
+weights_array = np.array(weights_list)
+
+# Error handling for mismatched weights and tickers
+if len(weights_list) != len(tickers_list):
+    st.error("The number of weights must match the number of tickers. Please adjust your inputs.")
+    st.stop()
+
+var_method = st.selectbox("Select VaR Method", ["Historical", "Parametric", "Monte Carlo Simulations"])
+
 # Fetch adjusted close data
 adj_close_df = pd.DataFrame()
 for ticker in tickers_list:
     try:
         logging.debug(f"Fetching data for {ticker} from {start_date} to {end_date}")
+        st.write(f"Fetching data for {ticker} from {start_date} to {end_date}")
         data = yf.download(ticker, start=start_date, end=end_date, progress=False, threads=False)
         logging.debug(f"Data for {ticker}: {data.head()}")
+        st.write(f"Data for {ticker}: {data.head()}")
         if 'Adj Close' in data.columns and not data['Adj Close'].empty:
             adj_close_df[ticker] = data['Adj Close']
         else:
