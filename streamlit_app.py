@@ -1,9 +1,11 @@
 import streamlit as st
-import numpy as np
-import pandas as pd
-import yfinance as yf
-import matplotlib.pyplot as plt
-from scipy.stats import norm
+import numpy as np # type: ignore
+import pandas as pd # type: ignore
+import yfinance as yf # type: ignore
+import matplotlib.pyplot as plt # type: ignore
+from scipy.stats import norm # type: ignore
+import logging
+import socket
 
 st.set_page_config(layout="wide")
 st.title("Value at Risk (VaR) Calculator")
@@ -41,7 +43,19 @@ if len(weights_list) != len(tickers_list):
 
 var_method = st.selectbox("Select VaR Method", ["Historical", "Parametric", "Monte Carlo Simulations"])
 
-import logging
+# Check network access
+try:
+    socket.create_connection(("www.google.com", 80))
+    st.write("Network access: OK")
+except OSError:
+    st.error("Network access: FAILED")
+    st.stop()
+
+# Display library versions
+st.write(f"yfinance version: {yf.__version__}")
+st.write(f"pandas version: {pd.__version__}")
+st.write(f"numpy version: {np.__version__}")
+st.write(f"streamlit version: {st.__version__}")
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
