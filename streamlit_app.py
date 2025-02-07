@@ -41,17 +41,25 @@ if len(weights_list) != len(tickers_list):
 
 var_method = st.selectbox("Select VaR Method", ["Historical", "Parametric", "Monte Carlo Simulations"])
 
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
 # Fetch adjusted close data
 adj_close_df = pd.DataFrame()
 for ticker in tickers_list:
     try:
+        logging.debug(f"Fetching data for {ticker} from {start_date} to {end_date}")
         data = yf.download(ticker, start=start_date, end=end_date, progress=False, threads=False)
+        logging.debug(f"Data for {ticker}: {data.head()}")
         if 'Adj Close' in data.columns and not data['Adj Close'].empty:
             adj_close_df[ticker] = data['Adj Close']
         else:
             st.warning(f"No data or 'Adj Close' column found for {ticker}. Skipping.")
     except Exception as e:
         st.warning(f"Error fetching data for {ticker}: {e}")
+        logging.error(f"Error fetching data for {ticker}: {e}")
 
 if adj_close_df.empty:
     st.error("No valid data found for the provided tickers. Please check your inputs.")
