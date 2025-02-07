@@ -1,11 +1,9 @@
 import streamlit as st
-import numpy as np # type: ignore
-import pandas as pd # type: ignore
-import yfinance as yf # type: ignore
-import matplotlib.pyplot as plt # type: ignore
-from scipy.stats import norm # type: ignore
-import logging
-import socket
+import numpy as np
+import pandas as pd
+import yfinance as yf
+import matplotlib.pyplot as plt
+from scipy.stats import norm
 
 st.set_page_config(layout="wide")
 st.title("Value at Risk (VaR) Calculator")
@@ -43,52 +41,17 @@ if len(weights_list) != len(tickers_list):
 
 var_method = st.selectbox("Select VaR Method", ["Historical", "Parametric", "Monte Carlo Simulations"])
 
-# Check network access
-try:
-    socket.create_connection(("www.google.com", 80))
-    st.write("Network access: OK")
-except OSError:
-    st.error("Network access: FAILED")
-    st.stop()
-
-# Display library versions
-st.write(f"yfinance version: {yf.__version__}")
-st.write(f"pandas version: {pd.__version__}")
-st.write(f"numpy version: {np.__version__}")
-st.write(f"streamlit version: {st.__version__}")
-
-# Configure logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-
-# Normalize and prepare input data
-tickers_list = [ticker.upper() for ticker in tickers.split()]
-weights_list = list(map(float, weights.split()))
-weights_list = [w / 100 for w in weights_list]
-weights_array = np.array(weights_list)
-
-# Error handling for mismatched weights and tickers
-if len(weights_list) != len(tickers_list):
-    st.error("The number of weights must match the number of tickers. Please adjust your inputs.")
-    st.stop()
-
-var_method = st.selectbox("Select VaR Method", ["Historical", "Parametric", "Monte Carlo Simulations"])
-
 # Fetch adjusted close data
 adj_close_df = pd.DataFrame()
 for ticker in tickers_list:
     try:
-        logging.debug(f"Fetching data for {ticker} from {start_date} to {end_date}")
-        st.write(f"Fetching data for {ticker} from {start_date} to {end_date}")
         data = yf.download(ticker, start=start_date, end=end_date, progress=False, threads=False)
-        logging.debug(f"Data for {ticker}: {data.head()}")
-        st.write(f"Data for {ticker}: {data.head()}")
         if 'Adj Close' in data.columns and not data['Adj Close'].empty:
             adj_close_df[ticker] = data['Adj Close']
         else:
             st.warning(f"No data or 'Adj Close' column found for {ticker}. Skipping.")
     except Exception as e:
         st.warning(f"Error fetching data for {ticker}: {e}")
-        logging.error(f"Error fetching data for {ticker}: {e}")
 
 if adj_close_df.empty:
     st.error("No valid data found for the provided tickers. Please check your inputs.")
